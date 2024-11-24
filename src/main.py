@@ -25,6 +25,18 @@ def delete_file(file_path):
     if os.path.exists(file_path):
         os.remove(file_path)
 
+@app.get("/")
+async def root():
+    """Root endpoint providing API info."""
+    return {
+        "message": "Welcome to the Music Popularity Predictor API!",
+        "endpoints": {
+            "/predict": "Upload a CSV file to get predictions",
+            "/retrain": "Upload a CSV file to retrain the model",
+        },
+        "docs_url": "/docs",
+        "redoc_url": "/redoc",
+    }
 
 @app.post("/predict")
 async def make_prediction(file: UploadFile = File(...)):
