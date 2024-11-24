@@ -12,6 +12,11 @@ app = FastAPI()
 DATA_PATH = "uploaded_data.csv"
 MODEL_PATH = "music_popularity_model.pkl"
 
+@app.get("/")
+def read_root():
+    """Root endpoint."""
+    return {"message": "Welcome to the Music Popularity Prediction API"}
+
 @app.post("/predict")
 async def make_prediction(file: UploadFile = File(...)):
     """Endpoint for making predictions."""
