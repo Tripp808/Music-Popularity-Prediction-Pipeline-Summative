@@ -13,7 +13,7 @@ MODEL_PATH = "music_popularity_model.pkl"
 # CORS middleware to allow requests from any domain
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow requests from any domain, i will update with domain name after i deploy later
+    allow_origins=["*"],  # Allow requests from any domain, i will update with domain name after i deploy
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods
     allow_headers=["*"],  # Allow all headers

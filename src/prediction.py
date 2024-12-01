@@ -1,10 +1,10 @@
 import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 import io
 import base64
 from preprocessing import preprocess_data
-
 
 def load_model(model_path='music_popularity_model.pkl'):
     """Loads a pre-trained model."""
@@ -20,7 +20,7 @@ def load_model(model_path='music_popularity_model.pkl'):
 
 
 def predict(file_path, model_path='music_popularity_model.pkl'):
-    """Preprocesses new data, makes predictions, and generates visualization."""
+    """Preprocesses new data, makes predictions, and generates visualizations."""
     try:
         print(f"Loading model from {model_path}...")
         model = load_model(model_path)
@@ -48,28 +48,62 @@ def predict(file_path, model_path='music_popularity_model.pkl'):
         data["Prediction"] = predictions
         result = data[["Track", "Artist", "Prediction"]]
 
-        # Generate a bar chart visualization
-        prediction_counts = data["Prediction"].value_counts()
-        labels = ["Will Perform Well", "Will Not Perform Well"]
-        sizes = [prediction_counts.get(1, 0), prediction_counts.get(0, 0)]
-        colors = ["#4CAF50", "#FF5252"]
-
+        # 1. Visualization: Distribution of Popularity (Prediction)
         plt.figure(figsize=(8, 6))
-        plt.bar(labels, sizes, color=colors)
+        data["Prediction"].value_counts().plot(kind="bar", color=["#4CAF50", "#FF5252"])
+        plt.title("Distribution of Popularity Prediction")
         plt.xlabel("Prediction")
         plt.ylabel("Number of Songs")
-        plt.title("Prediction Results")
+        plt.xticks([0, 1], ["Will Perform Well", "Will Not Perform Well"], rotation=0)
         plt.tight_layout()
-
-        # Convert the visualization to a Base64 string
         buffer = io.BytesIO()
         plt.savefig(buffer, format="png")
         buffer.seek(0)
         visualization_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
         buffer.close()
+        
+        # 2. Visualization: Correlation Heatmap (Numerical Features)
+        numeric_data = data.select_dtypes(include=["float64", "int64"])
+        plt.figure(figsize=(10, 8))
+        sns.heatmap(numeric_data.corr(), annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
+        plt.title("Correlation Heatmap of Numerical Features")
+        plt.tight_layout()
+        correlation_buffer = io.BytesIO()
+        plt.savefig(correlation_buffer, format="png")
+        correlation_buffer.seek(0)
+        correlation_base64 = base64.b64encode(correlation_buffer.getvalue()).decode("utf-8")
+        correlation_buffer.close()
 
-        print("Visualization generated successfully.")
-        return result, visualization_base64
+        # 3. Visualization: Feature Importance (Bar Chart)
+        # Feature importance visualization requires the model to support it (e.g., tree-based models)
+        try:
+            feature_importances = model.feature_importances_  # Example for tree-based models
+            features = X.columns
+            importance_data = pd.DataFrame({
+                "Feature": features,
+                "Importance": feature_importances
+            }).sort_values(by="Importance", ascending=False)
+
+            plt.figure(figsize=(10, 6))
+            sns.barplot(x="Importance", y="Feature", data=importance_data, palette="viridis")
+            plt.title("Feature Importance")
+            plt.tight_layout()
+            importance_buffer = io.BytesIO()
+            plt.savefig(importance_buffer, format="png")
+            importance_buffer.seek(0)
+            importance_base64 = base64.b64encode(importance_buffer.getvalue()).decode("utf-8")
+            importance_buffer.close()
+        except AttributeError:
+            importance_base64 = None  # Model does not support feature importance
+
+        print("Visualizations generated successfully.")
+        visualizations = {
+            "prediction_distribution": visualization_base64,
+            "correlation_heatmap": correlation_base64,
+            "feature_importance": importance_base64
+        }
+
+        return result, visualizations
     except FileNotFoundError:
         raise FileNotFoundError(f"Data file not found at {file_path}")
     except ValueError as ve:
