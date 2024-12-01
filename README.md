@@ -5,7 +5,7 @@ SoundIQ is a full-stack web application designed to predict the popularity of mu
 ## 🔗 Links
 
 - **Live Web App**: [SoundIQ on Vercel](https://sound-iq.vercel.app/)
-- **Backend API**: [SoundIQ Backend on Render](https://music-popularity-predictor.onrender.com/)
+- **Backend API**: [SoundIQ Backend on Render](https://music-popularity-predictor.onrender.com/) The APi is run from the main.py in the src folder and contains all the functions and endpoints including the other pipeline scripts used.
 - **Demo Video**: [Loom Demo](https://www.loom.com/share/f78f850e01e340cc9484b34234fe8ebd?sid=544dd36e-fad9-48a0-ad9b-17649a679607)
 - You can directly download and use any of the datasets for testing in the data/test directory of this repo. The original dataset that was usied for training is in data/train
 - **Docker Image**: [oche99/music-predictor on Docker Hub](https://hub.docker.com/r/oche99/music-predictor) Run this docker pull oche99/music-predictor
