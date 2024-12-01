@@ -2,7 +2,7 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from model import train_model
 from prediction import predict
-from uuid import uuid4  # To generate unique filenames
+from uuid import uuid4  # for unique filenames
 import os
 
 app = FastAPI()
@@ -10,10 +10,10 @@ app = FastAPI()
 # Define file paths
 MODEL_PATH = "music_popularity_model.pkl"
 
-# Add CORS middleware to allow requests from any domain
+# CORS middleware to allow requests from any domain
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow requests from any domain
+    allow_origins=["*"],  # Allow requests from any domain, i will update with domain name after i deploy later
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods
     allow_headers=["*"],  # Allow all headers
@@ -55,9 +55,12 @@ async def make_prediction(file: UploadFile = File(...)):
     unique_filename = save_uploaded_file(file)
 
     try:
-        # Make predictions
-        predictions = predict(unique_filename, MODEL_PATH)
-        return {"predictions": predictions.tolist()}
+        # Make predictions and generate visualization
+        predictions_df, visualization = predict(unique_filename, MODEL_PATH)
+
+        predictions = predictions_df.to_dict(orient="records")
+
+        return {"predictions": predictions, "visualization": visualization}
     finally:
         # Clean up the file after processing
         delete_file(unique_filename)
@@ -66,7 +69,7 @@ async def make_prediction(file: UploadFile = File(...)):
 @app.post("/retrain")
 async def retrain_model(file: UploadFile = File(...)):
     """Endpoint for retraining the model with new data."""
-    # Save uploaded file with a unique name
+    # Save with unique name
     unique_filename = save_uploaded_file(file)
 
     try:

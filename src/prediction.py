@@ -1,6 +1,10 @@
 import pickle
 import pandas as pd
+import matplotlib.pyplot as plt
+import io
+import base64
 from preprocessing import preprocess_data
+
 
 def load_model(model_path='music_popularity_model.pkl'):
     """Loads a pre-trained model."""
@@ -14,15 +18,23 @@ def load_model(model_path='music_popularity_model.pkl'):
     except Exception as e:
         raise RuntimeError(f"Error loading model: {str(e)}")
 
+
 def predict(file_path, model_path='music_popularity_model.pkl'):
-    """Preprocesses new data and makes predictions."""
+    """Preprocesses new data, makes predictions, and generates visualization."""
     try:
         print(f"Loading model from {model_path}...")
         model = load_model(model_path)
 
-        print(f"Preprocessing data from {file_path}...")
+        print(f"Reading data from {file_path}...")
+        data = pd.read_csv(file_path)
+
+        # Ensure necessary columns exist
+        if not {"Track", "Artist"}.issubset(data.columns):
+            raise ValueError("The CSV file must contain 'Track' and 'Artist' columns.")
+
+        print("Preprocessing data...")
         X, _ = preprocess_data(file_path)
-        
+
         # Validate preprocessed data
         if X is None or len(X) == 0:
             raise ValueError("Preprocessed data is empty or invalid.")
@@ -31,7 +43,33 @@ def predict(file_path, model_path='music_popularity_model.pkl'):
         # Generate predictions
         predictions = model.predict(X)
         print(f"Predictions generated: {predictions}")
-        return predictions
+
+        # Combine predictions with Track and Artist columns
+        data["Prediction"] = predictions
+        result = data[["Track", "Artist", "Prediction"]]
+
+        # Generate a bar chart visualization
+        prediction_counts = data["Prediction"].value_counts()
+        labels = ["Will Perform Well", "Will Not Perform Well"]
+        sizes = [prediction_counts.get(1, 0), prediction_counts.get(0, 0)]
+        colors = ["#4CAF50", "#FF5252"]
+
+        plt.figure(figsize=(8, 6))
+        plt.bar(labels, sizes, color=colors)
+        plt.xlabel("Prediction")
+        plt.ylabel("Number of Songs")
+        plt.title("Prediction Results")
+        plt.tight_layout()
+
+        # Convert the visualization to a Base64 string
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format="png")
+        buffer.seek(0)
+        visualization_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        buffer.close()
+
+        print("Visualization generated successfully.")
+        return result, visualization_base64
     except FileNotFoundError:
         raise FileNotFoundError(f"Data file not found at {file_path}")
     except ValueError as ve:
