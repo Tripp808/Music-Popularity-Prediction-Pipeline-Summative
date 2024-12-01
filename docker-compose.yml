@@ -1,0 +1,24 @@
+version: "3"
+services:
+  model-api:
+    image: music-predictor:latest
+    ports:
+      - "8002:80" # container to port 8002
+    deploy:
+      replicas: 1 # one container running
+    restart: always
+# model-api-2:
+#   image: music-predictor:latest
+#   ports:
+#     - "8003:80"
+#   deploy:
+#     replicas: 1
+#   restart: always
+
+# model-api-3:
+#   image: music-predictor:latest
+#   ports:
+#     - "8004:80"
+#   deploy:
+#     replicas: 1
+#   restart: always
