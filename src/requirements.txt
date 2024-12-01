@@ -1,6 +1,7 @@
 fastapi
 uvicorn
 pandas
+matplotlib
 scikit-learn
 pickle-mixin
 python-multipart
