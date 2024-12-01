@@ -1,6 +1,5 @@
-# main.py
-
 from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from model import train_model
 from prediction import predict
 from uuid import uuid4  # To generate unique filenames
@@ -10,6 +9,15 @@ app = FastAPI()
 
 # Define file paths
 MODEL_PATH = "music_popularity_model.pkl"
+
+# Add CORS middleware to allow requests from any domain
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow requests from any domain
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+)
 
 
 def save_uploaded_file(file: UploadFile):
@@ -25,6 +33,7 @@ def delete_file(file_path):
     if os.path.exists(file_path):
         os.remove(file_path)
 
+
 @app.get("/")
 async def root():
     """Root endpoint providing API info."""
@@ -37,6 +46,7 @@ async def root():
         "docs_url": "/docs",
         "redoc_url": "/redoc",
     }
+
 
 @app.post("/predict")
 async def make_prediction(file: UploadFile = File(...)):
